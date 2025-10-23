@@ -1,20 +1,14 @@
 import { describe, expect, it } from "vitest";
-import type { StatementCoverageReport } from "../types/JsonFinal";
+import type { LineCoverage } from "../types/JsonFinal";
 import { getUncoveredLinesFromStatements } from "./getUncoveredLinesFromStatements";
 
 describe("getUncoveredLinesFromStatements()", () => {
 	it("returns a single line range for only one untested line.", () => {
-		const statements: StatementCoverageReport = {
-			statementMap: {
-				"0": {
-					start: { line: 1, column: 0 },
-					end: { line: 1, column: 0 },
-				},
-			},
-			s: { "0": 0 },
+		const lineCoverage: LineCoverage = {
+			"1": 0,
 		};
 
-		const uncoveredLines = getUncoveredLinesFromStatements(statements);
+		const uncoveredLines = getUncoveredLinesFromStatements(lineCoverage);
 
 		expect(uncoveredLines).toEqual([
 			{
@@ -25,41 +19,23 @@ describe("getUncoveredLinesFromStatements()", () => {
 	});
 
 	it("returns an empty array if only line is covered.", () => {
-		const statements: StatementCoverageReport = {
-			statementMap: {
-				"0": {
-					start: { line: 1, column: 0 },
-					end: { line: 1, column: 0 },
-				},
-			},
-			s: { "0": 1 },
+		const lineCoverage: LineCoverage = {
+			"1": 1,
 		};
 
-		const uncoveredLines = getUncoveredLinesFromStatements(statements);
+		const uncoveredLines = getUncoveredLinesFromStatements(lineCoverage);
 
 		expect(uncoveredLines).toEqual([]);
 	});
 
 	it("returns a linge range of 3 lines if all statements are uncovered.", () => {
-		const statements: StatementCoverageReport = {
-			statementMap: {
-				"0": {
-					start: { line: 1, column: 0 },
-					end: { line: 1, column: 0 },
-				},
-				"1": {
-					start: { line: 2, column: 0 },
-					end: { line: 2, column: 0 },
-				},
-				"2": {
-					start: { line: 3, column: 0 },
-					end: { line: 3, column: 0 },
-				},
-			},
-			s: { "0": 0, "1": 0, "2": 0 },
+		const lineCoverage: LineCoverage = {
+			"1": 0,
+			"2": 0,
+			"3": 0,
 		};
 
-		const uncoveredLines = getUncoveredLinesFromStatements(statements);
+		const uncoveredLines = getUncoveredLinesFromStatements(lineCoverage);
 
 		expect(uncoveredLines).toEqual([
 			{
@@ -70,29 +46,14 @@ describe("getUncoveredLinesFromStatements()", () => {
 	});
 
 	it("returns two line ranges if statements are interrupted by covered line.", () => {
-		const statements: StatementCoverageReport = {
-			statementMap: {
-				"0": {
-					start: { line: 1, column: 0 },
-					end: { line: 1, column: 0 },
-				},
-				"1": {
-					start: { line: 2, column: 0 },
-					end: { line: 2, column: 0 },
-				},
-				"2": {
-					start: { line: 3, column: 0 },
-					end: { line: 3, column: 0 },
-				},
-				"3": {
-					start: { line: 4, column: 0 },
-					end: { line: 4, column: 0 },
-				},
-			},
-			s: { "0": 0, "1": 1, "2": 0, "3": 0 },
+		const lineCoverage: LineCoverage = {
+			"1": 0,
+			"2": 1,
+			"3": 0,
+			"4": 0,
 		};
 
-		const uncoveredLines = getUncoveredLinesFromStatements(statements);
+		const uncoveredLines = getUncoveredLinesFromStatements(lineCoverage);
 
 		expect(uncoveredLines).toEqual([
 			{ start: 1, end: 1 },
@@ -100,46 +61,28 @@ describe("getUncoveredLinesFromStatements()", () => {
 		]);
 	});
 
-	it("returns a single range if statement numbers are not sequential.", () => {
-		const statements: StatementCoverageReport = {
-			statementMap: {
-				"0": {
-					start: { line: 1, column: 0 },
-					end: { line: 1, column: 0 },
-				},
-				"5": {
-					start: { line: 6, column: 0 },
-					end: { line: 6, column: 0 },
-				},
-				"6": {
-					start: { line: 7, column: 0 },
-					end: { line: 7, column: 0 },
-				},
-			},
-			s: { "0": 0, "5": 0, "6": 0 },
+	it("returns multiple ranges if line numbers are not sequential.", () => {
+		const lineCoverage: LineCoverage = {
+			"1": 0,
+			"6": 0,
+			"7": 0,
 		};
 
-		const uncoveredLines = getUncoveredLinesFromStatements(statements);
+		const uncoveredLines = getUncoveredLinesFromStatements(lineCoverage);
 
-		expect(uncoveredLines).toEqual([{ start: 1, end: 7 }]);
+		expect(uncoveredLines).toEqual([
+			{ start: 1, end: 1 },
+			{ start: 6, end: 7 },
+		]);
 	});
 
-	it("handles the case where the property in 's' is greater than 1.", () => {
-		const statements: StatementCoverageReport = {
-			statementMap: {
-				"0": {
-					start: { line: 1, column: 0 },
-					end: { line: 1, column: 0 },
-				},
-				"1": {
-					start: { line: 2, column: 0 },
-					end: { line: 2, column: 0 },
-				},
-			},
-			s: { "0": 2, "1": 8 },
+	it("handles the case where the hit count is greater than 1.", () => {
+		const lineCoverage: LineCoverage = {
+			"1": 2,
+			"2": 8,
 		};
 
-		const uncoveredLines = getUncoveredLinesFromStatements(statements);
+		const uncoveredLines = getUncoveredLinesFromStatements(lineCoverage);
 
 		expect(uncoveredLines).toEqual([]);
 	});

@@ -1,13 +1,14 @@
 {
-  "name": "vitest-coverage-report-action",
+  "name": "bun-coverage-report-action",
   "version": "0.0.0",
-  "description": "A GitHub Action to report the test coverage of vitest",
+  "description": "A GitHub Action to report the test coverage of bun test",
   "main": "src/index.js",
   "private": true,
   "scripts": {
     "test": "vitest",
     "test:coverage": "vitest run --coverage.enabled true",
     "test:export": "npx ts-node test/exportTestTable.ts",
+    "test:local": "npm run test:coverage && npm run build && node test/local-runner.ts",
     "lint": "biome check",
     "lint:write": "biome check --write",
     "lint:ci": "biome ci",
@@ -17,22 +18,24 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/davelosert/vitest-coverage-report-action.git"
+    "url": "git+https://github.com/dzannotti/bun-coverage-report-action.git"
   },
   "keywords": [
-    "vitest",
+    "bun",
     "coverage",
-    "nyc"
+    "lcov",
+    "test"
   ],
   "author": "David Losert <david@david-losert.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/davelosert/vitest-coverage-report-action/issues"
+    "url": "https://github.com/dzannotti/bun-coverage-report-action/issues"
   },
-  "homepage": "https://github.com/davelosert/vitest-coverage-report-action#readme",
+  "homepage": "https://github.com/dzannotti/bun-coverage-report-action#readme",
   "dependencies": {
     "@actions/core": "1.11.1",
     "@actions/github": "6.0.1",
+    "@friedemannsommer/lcov-parser": "5.0.1",
     "common-tags": "1.8.2"
   },
   "devDependencies": {

@@ -105,11 +105,9 @@ describe("generateFileCoverageHtml()", () => {
 		expect(html).toContain("No changed files found.");
 	});
 
-	it("renders the statements, branches, functions and line coverage-percentage of a file.", () => {
+	it("renders the functions and line coverage-percentage of a file.", () => {
 		const jsonSummary: JsonSummary = createMockJsonSummary({
 			"src/generateFileCoverageHtml.ts": {
-				statements: createMockReportNumbers({ pct: 70 }),
-				branches: createMockReportNumbers({ pct: 80 }),
 				functions: createMockReportNumbers({ pct: 90 }),
 				lines: createMockReportNumbers({ pct: 100 }),
 			},
@@ -127,8 +125,6 @@ describe("generateFileCoverageHtml()", () => {
 
 		const tableLine = getTableLine(2, html);
 
-		expect(tableLine).toContain("70%");
-		expect(tableLine).toContain("80%");
 		expect(tableLine).toContain("90%");
 		expect(tableLine).toContain("100%");
 	});
@@ -136,7 +132,7 @@ describe("generateFileCoverageHtml()", () => {
 	it("renders the line-coverage in the same row as the coverage.", async (): Promise<void> => {
 		const jsonSummary: JsonSummary = createMockJsonSummary({
 			"src/exampleFile.ts": createMockCoverageReport({
-				statements: createMockReportNumbers({ pct: 70 }),
+				lines: createMockReportNumbers({ pct: 70 }),
 			}),
 		});
 		const jsonFinal: JsonFinal = {
@@ -166,7 +162,7 @@ describe("generateFileCoverageHtml()", () => {
 	it("renders single line coverage without range.", async (): Promise<void> => {
 		const jsonSummary: JsonSummary = createMockJsonSummary({
 			"src/exampleFile.ts": createMockCoverageReport({
-				statements: createMockReportNumbers({ pct: 70 }),
+				lines: createMockReportNumbers({ pct: 70 }),
 			}),
 		});
 		const jsonFinal: JsonFinal = {
@@ -194,7 +190,7 @@ describe("generateFileCoverageHtml()", () => {
 	it("renders non adjacent line coverage with multiple links.", async (): Promise<void> => {
 		const jsonSummary: JsonSummary = createMockJsonSummary({
 			"src/exampleFile.ts": createMockCoverageReport({
-				statements: createMockReportNumbers({ pct: 70 }),
+				lines: createMockReportNumbers({ pct: 70 }),
 			}),
 		});
 		const jsonFinal: JsonFinal = {
@@ -251,19 +247,19 @@ describe("generateFileCoverageHtml()", () => {
 		expect(html).toContain(icons.equal);
 		const equalSignCount = (html.match(new RegExp(icons.equal, "g")) || [])
 			.length;
-		expect(equalSignCount).toBe(4);
+		expect(equalSignCount).toBe(2);
 	});
 
 	it("renders a plus sign and the increased percentage for files with increased coverage", () => {
 		const jsonSummary: JsonSummary = createMockJsonSummary({
 			"file1.ts": createMockCoverageReport({
-				branches: createMockReportNumbers({ pct: 70 }),
+				lines: createMockReportNumbers({ pct: 70 }),
 			}),
 		});
 
 		const jsonSummaryCompare: JsonSummary = createMockJsonSummary({
 			"file1.ts": createMockCoverageReport({
-				branches: createMockReportNumbers({ pct: 60 }),
+				lines: createMockReportNumbers({ pct: 60 }),
 			}),
 		});
 		const jsonFinal: JsonFinal = {
@@ -292,13 +288,13 @@ describe("generateFileCoverageHtml()", () => {
 	it("renders a minus sign and the decreased percentage for files with decreased coverage", () => {
 		const jsonSummary: JsonSummary = createMockJsonSummary({
 			"file1.ts": createMockCoverageReport({
-				branches: createMockReportNumbers({ pct: 70 }),
+				lines: createMockReportNumbers({ pct: 70 }),
 			}),
 		});
 
 		const jsonSummaryCompare: JsonSummary = createMockJsonSummary({
 			"file1.ts": createMockCoverageReport({
-				branches: createMockReportNumbers({ pct: 80 }),
+				lines: createMockReportNumbers({ pct: 80 }),
 			}),
 		});
 		const jsonFinal: JsonFinal = {

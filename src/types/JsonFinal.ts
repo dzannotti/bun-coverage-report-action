@@ -1,28 +1,10 @@
-type StatementMap = {
-	[statementNumber: string]: {
-		start: {
-			line: number;
-			column: number;
-		};
-		end: {
-			line: number;
-			column: number;
-		};
-	};
+type LineCoverage = {
+	[lineNumber: string]: number;
 };
 
-type StatementCoverage = {
-	[statementNumber: string]: number;
-};
-
-type StatementCoverageReport = {
-	statementMap: StatementMap;
-	s: StatementCoverage;
-};
-
-type FileCoverageReport = StatementCoverageReport & {
+type FileCoverageReport = {
 	path: string;
-	all: boolean;
+	lines: LineCoverage;
 };
 
 type JsonFinal = {
@@ -32,7 +14,5 @@ type JsonFinal = {
 export type {
 	JsonFinal,
 	FileCoverageReport,
-	StatementCoverageReport,
-	StatementCoverage,
-	StatementMap,
+	LineCoverage,
 };

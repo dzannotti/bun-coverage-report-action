@@ -7,9 +7,7 @@ type ReportNumbers = {
 
 type CoverageReport = {
 	lines: ReportNumbers;
-	statements: ReportNumbers;
 	functions: ReportNumbers;
-	branches: ReportNumbers;
 };
 
 type JsonSummary = {

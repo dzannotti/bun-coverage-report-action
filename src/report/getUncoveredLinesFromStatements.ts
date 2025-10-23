@@ -1,21 +1,23 @@
-import type { StatementCoverageReport } from "../types/JsonFinal";
+import type { LineCoverage } from "../types/JsonFinal";
 
 type LineRange = {
 	start: number;
 	end: number;
 };
 
-const getUncoveredLinesFromStatements = ({
-	s,
-	statementMap,
-}: StatementCoverageReport): LineRange[] => {
-	const keys = Object.keys(statementMap);
+const getUncoveredLinesFromStatements = (
+	lineCoverage: LineCoverage,
+): LineRange[] => {
+	const lineNumbers = Object.keys(lineCoverage).map(Number).sort((a, b) => a - b);
 
 	const uncoveredLineRanges: LineRange[] = [];
 	let currentRange: LineRange | undefined = undefined;
-	for (const key of keys) {
-		if (s[key] > 0) {
-			// If the statement is covered, we need to close the current range.
+
+	for (const lineNumber of lineNumbers) {
+		const hitCount = lineCoverage[lineNumber];
+
+		if (hitCount > 0) {
+			// If the line is covered, we need to close the current range.
 			if (currentRange) {
 				uncoveredLineRanges.push(currentRange);
 				currentRange = undefined;
@@ -27,13 +29,23 @@ const getUncoveredLinesFromStatements = ({
 		// Start a new range if we don't have one yet.
 		if (!currentRange) {
 			currentRange = {
-				start: statementMap[key].start.line,
-				end: statementMap[key].end.line,
+				start: lineNumber,
+				end: lineNumber,
 			};
 			continue;
 		}
 
-		currentRange.end = statementMap[key].end.line;
+		// Extend the current range if this line is consecutive
+		if (lineNumber === currentRange.end + 1) {
+			currentRange.end = lineNumber;
+		} else {
+			// Otherwise, close the current range and start a new one
+			uncoveredLineRanges.push(currentRange);
+			currentRange = {
+				start: lineNumber,
+				end: lineNumber,
+			};
+		}
 	}
 
 	// If we still have a current range, we need to add it to the uncovered line ranges.

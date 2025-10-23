@@ -16,9 +16,7 @@ const createMockReportNumbers = (
 
 const defaultReport: CoverageReport = {
 	lines: createMockReportNumbers(),
-	statements: createMockReportNumbers(),
 	functions: createMockReportNumbers(),
-	branches: createMockReportNumbers(),
 };
 
 const createMockCoverageReport = (
@@ -31,16 +29,6 @@ const createMockCoverageReport = (
 
 const defaultJsonSummary: JsonSummary = {
 	total: createMockCoverageReport({
-		statements: createMockReportNumbers({
-			total: 100,
-			covered: 10,
-			pct: 10,
-		}),
-		branches: createMockReportNumbers({
-			total: 100,
-			covered: 20,
-			pct: 20,
-		}),
 		functions: createMockReportNumbers({
 			total: 100,
 			covered: 30,
