@@ -1,6 +1,6 @@
-# vitest-coverage-report-action
+# bun-coverage-report-action
 
-This GitHub Action reports [vitest](https://vitest.dev/) coverage results as a GitHub step-summary and as a comment on a pull request.
+This GitHub Action reports [Bun](https://bun.sh/) test coverage results as a GitHub step-summary and as a comment on a pull request.
 
 ![Coverage Report as Step Summary](./docs/coverage-report.png)
 
@@ -10,41 +10,21 @@ Want to contribute? Check out the [Contributing Guidelines](./CONTRIBUTING.md).
 
 ## Usage
 
-To use this action, you need to configure `vitest` to create a coverage report with the following reporters:
+To use this action, you need to generate an LCOV coverage report from `bun test`. Bun generates LCOV format coverage reports by default when you enable coverage.
 
-- `json-summary` (required): This reporter generates a high-level summary of your overall coverage.
-- `json` (optional): If provided, this reporter generates file-specific coverage reports for each file in your project.
-
-You can configure the reporters in your Vite configuration file (e.g., `vite.config.js`) as follows:
-
-```js
-import { defineConfig } from 'vite';
-
-export default defineConfig({
-  test: {
-    coverage: {
-      // you can include other reporters, but 'json-summary' is required, json is recommended
-      reporter: ['text', 'json-summary', 'json'],
-      // If you want a coverage reports even if your tests are failing, include the reportOnFailure option
-      reportOnFailure: true,
-    }
-  }
-});
-```
-
-Then execute `npx vitest --coverage.enabled true` in a step before this action.
+Run `bun test --coverage` in a step before this action. This will generate a `coverage/lcov.info` file that the action will parse.
 
 ### Example Workflow
 
 ```yml
 name: 'Test'
-on: 
+on:
   pull_request:
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     permissions:
       # Required to checkout the code
       contents: read
@@ -53,19 +33,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: 'Install Node'
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
+    - name: 'Setup Bun'
+      uses: oven-sh/setup-bun@v1
     - name: 'Install Deps'
-      run: npm install
+      run: bun install
     - name: 'Test'
-      run: npx vitest --coverage.enabled true
+      run: bun test --coverage
     - name: 'Report Coverage'
-      # Set if: always() to also generate the report if tests are failing
-      # Only works if you set `reportOnFailure: true` in your vite config as specified above
-      if: always() 
-      uses:  davelosert/vitest-coverage-report-action@v2
+      if: always()
+      uses: dzannotti/bun-coverage-report-action@v1
 ```
 
 > [!NOTE]
@@ -77,19 +53,17 @@ This action requires the `pull-requests: write` permission to add a comment to y
 
 ### Options
 
-| Option                      | Description                                                                                                                                                                                                                                                      | Default                                                                                                                                                                                                                                                            |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `working-directory`         | The main path to search for coverage- and configuration files (adjusting this is especially useful in monorepos).                                                                                                                                                | `./`                                                                                                                                                                                                                                                               |
-| `json-summary-path`         | The path to the json summary file.                                                                                                                                                                                                                               | `${working-directory}/coverage/coverage-summary.json`                                                                                                                                                                                                              |
-| `json-final-path`           | The path to the json final file.                                                                                                                                                                                                                                 | `${working-directory}/coverage/coverage-final.json`                                                                                                                                                                                                                |
-| `json-summary-compare-path` | The path to the json summary file to compare against. If given, will display a trend indicator and the difference in the summary. Respects the `working-directory` option.                                                                                       | undefined                                                                                                                                                                                                                                                          |
-| `vite-config-path`          | The path to the vite config file. Will check the same paths as vite and vitest                                                                                                                                                                                   | Checks pattern `${working-directory}/vite[st].config.{t\|mt\|ct\|j\|mj\|cj}s`                                                                                                                   |
-| `github-token`              | A GitHub access token with permissions to write to issues (defaults to `secrets.GITHUB_TOKEN`).                                                                                                                                                                  | `${{ github.token }}`                                                                                                                                                                                                                                              |
-| `file-coverage-mode`        | Defines how file-based coverage is reported. Possible values are `all`, `changes` or `none`.                                                                                                                                                                     | `changes`                                                                                                                                                                                                                                                          |
-| `file-coverage-root-path`   | The root (or absolute) part of the path used within the json coverage reports to point to the covered files. You can change this if your reports were generated in a different context (e.g., a docker container) and the absolute paths don't match the current runner's workspace. Uses the runner's workspace path by default. | `${{ github.workspace }}`                                                                                                                                                                                                                                          |
-| `name`                      | Give the report a custom name. This is useful if you want multiple reports for different test suites within the same PR. Needs to be unique.                                                                                                                     | ''                                                                                                                                                                                                                                                                 |
-| `pr-number`                 | The number of the PR to post a comment to. When using the `push` trigger, you can set this option to "auto" to make the action automaticaly search of a PR with a matching `sha` value and comment on it.                                                                                                                                                                                                              | If in the context of a PR, the number of that PR.<br/> If in the context of a triggered workflow, the PR of the triggering workflow.                                                                    <br/>If no PR context is found, it defaults to `undefined` |
-| `comment-on`                | Specify where you want a comment to appear: "pr" for pull-request (if one can be found), "commit" for the commit in which context the action was run, or "none" for no comments. You can provide a comma-separated list of "pr" and "commit" to comment on both. | `pr`                                                                                                                                                                                                                                                               |
+| Option | Description | Default |
+| ------ | ----------- | ------- |
+| `working-directory` | The main path to search for coverage files (adjusting this is especially useful in monorepos). | `./` |
+| `lcov-file` | The path to the LCOV coverage report file. | `${working-directory}/coverage/lcov.info` |
+| `lcov-file-compare` | The path to the LCOV file to compare against. If given, will display a trend indicator and the difference in the summary. Respects the `working-directory` option. | undefined |
+| `github-token` | A GitHub access token with permissions to write to issues (defaults to `secrets.GITHUB_TOKEN`). | `${{ github.token }}` |
+| `file-coverage-mode` | Defines how file-based coverage is reported. Possible values are `all`, `changes` or `none`. | `changes` |
+| `file-coverage-root-path` | The root (or absolute) part of the path used within the LCOV coverage reports to point to the covered files. You can change this if your reports were generated in a different context (e.g., a docker container) and the absolute paths don't match the current runner's workspace. Uses the runner's workspace path by default. | `${{ github.workspace }}` |
+| `name` | Give the report a custom name. This is useful if you want multiple reports for different test suites within the same PR. Needs to be unique. | '' |
+| `pr-number` | The number of the PR to post a comment to. When using the `push` trigger, you can set this option to "auto" to make the action automaticaly search of a PR with a matching `sha` value and comment on it. | If in the context of a PR, the number of that PR.<br/> If in the context of a triggered workflow, the PR of the triggering workflow.<br/>If no PR context is found, it defaults to `undefined` |
+| `comment-on` | Specify where you want a comment to appear: "pr" for pull-request (if one can be found), "commit" for the commit in which context the action was run, or "none" for no comments. You can provide a comma-separated list of "pr" and "commit" to comment on both. | `pr` |
 
 #### File Coverage Mode
 
@@ -104,56 +78,22 @@ If your project includes multiple test suites and you want to consolidate their 
 ```yml
 ## ...
     - name: 'Report Frontend Coverage'
-      if: always() # Also generate the report if tests are failing
-      uses:  davelosert/vitest-coverage-report-action@v2
+      if: always()
+      uses: dzannotti/bun-coverage-report-action@v1
       with:
         name: 'Frontend'
-        json-summary-path: './coverage/coverage-summary-frontend.json'
-        json-final-path: './coverage/coverage-final-frontend.json
+        lcov-file: './coverage/lcov-frontend.info'
     - name: 'Report Backend Coverage'
-      if: always() # Also generate the report if tests are failing
-      uses:  davelosert/vitest-coverage-report-action@v2
+      if: always()
+      uses: dzannotti/bun-coverage-report-action@v1
       with:
         name: 'Backend'
-        json-summary-path: './coverage/coverage-summary-backend.json'
-        json-final-path: './coverage/coverage-final-backend.json'
+        lcov-file: './coverage/lcov-backend.info'
 ```
-
-### Coverage Thresholds
-
-> [!WARNING]
-> Currently, this action does not import the vite-configuration, but parses it as string to extract the coverage-thresholds by an regexp. In other words: All thresholds need to be directly defined in the config-file given to this action through the vite-config-path input. E.g., when using workspace to extend a parent-configuration, the thresholds can not be defined in the parent-config.
-
-This action reads the coverage thresholds specified in the `coverage` property of the Vite configuration file. It then uses these thresholds to determine the status of the generated report.
-
-For instance, consider the following configuration:
-
-```typescript
-import { defineConfig } from 'vite';
-
-export default defineConfig({
-  test: {
-    coverage: {
-      thresholds: {
-        lines: 60,
-        branches: 60,
-        functions: 60,
-        statements: 60
-      }
-    }
-  }
-});
-```
-
-With the above configuration, the report would appear as follows:
-
-![Coverage Threshold Report](./docs/coverage-report-threshold.png)
-
-If no thresholds are defined, the status will display as '🔵'.
 
 ### Coverage Trend Indicator
 
-By using the `json-summary-compare-path` option, the action will display both a trend indicator and the coverage difference in the summary. This feature is particularly useful for tracking changes between the main branch and a previous run.
+By using the `lcov-file-compare` option, the action will display both a trend indicator and the coverage difference in the summary. This feature is particularly useful for tracking changes between the main branch and a previous run.
 
 ![Screenshot of the action-result showcasing the trend indicator](./docs/coverage-report-trend-indicator.png)
 
@@ -185,14 +125,12 @@ jobs:
           ref: ${{ matrix.branch }}
           ## Set repository to correctly checkout from forks
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-      - name: "Install Node"
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20.x"
+      - name: "Setup Bun"
+        uses: oven-sh/setup-bun@v1
       - name: "Install Deps"
-        run: npm install
+        run: bun install
       - name: "Test"
-        run: npx vitest --coverage.enabled true
+        run: bun test --coverage
       - name: "Upload Coverage"
         uses: actions/upload-artifact@v4
         with:
@@ -202,8 +140,9 @@ jobs:
   report-coverage:
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
-        ## Check out the repository to obtain the vitest.config file
       - uses: actions/checkout@v4
       - name: "Download Coverage Artifacts"
         uses: actions/download-artifact@v4
@@ -215,34 +154,9 @@ jobs:
           name: coverage-main
           path: coverage-main
       - name: "Report Coverage"
-        uses: davelosert/vitest-coverage-report-action@v2
+        uses: dzannotti/bun-coverage-report-action@v1
         with:
-          json-summary-compare-path: coverage-main/coverage-summary.json
-```
-
-### Workspaces
-
-If you're using a monorepo with [Vitest Workspaces](https://vitest.dev/guide/workspace.html) and running Vitest from your project's root, Vitest will disregard the `coverage` property in individual project-level Vite configuration files. This is because some [configuration options](https://vitest.dev/guide/workspace.html#configuration), such as coverage, apply to the entire workspace and are not allowed in a project config.
-
-In such cases, you can create a Vite configuration file at the root of your project, alongside your `vitest.workspace.js` file, to configure coverage for the entire workspace:
-
-```js
-import { defineConfig } from 'vite';
-
-export default defineConfig({
-  test: {
-    coverage: {
-      // you can include other reporters, but 'json-summary' is required, json is recommended
-      reporter: ['text', 'json-summary', 'json'],
-    }
-  }
-});
-```
-
-Alternatively, you can supply [coverage options](https://vitest.dev/config/#coverage) directly to the CLI using dot notation:
-
-```sh
-npx vitest --coverage.enabled --coverage.provider=v8 --coverage.reporter=json-summary --coverage.reporter=json
+          lcov-file-compare: coverage-main/lcov.info
 ```
 
 ### Working with pull requests from forks
@@ -286,14 +200,12 @@ It will then automatically locate the appropriate pull request to comment on.
 
         steps:
           - uses: actions/checkout@v4
-          - name: "Install Node"
-            uses: actions/setup-node@v4
-            with:
-              node-version: "20.x"
+          - name: "Setup Bun"
+            uses: oven-sh/setup-bun@v1
           - name: "Install Deps"
-            run: npm install
+            run: bun install
           - name: "Test"
-            run: npx vitest --coverage.enabled true
+            run: bun test --coverage
 
           - name: "Upload Coverage"
             uses: actions/upload-artifact@v4
@@ -327,7 +239,7 @@ It will then automatically locate the appropriate pull request to comment on.
               github-token: ${{ secrets.GITHUB_TOKEN }}
               run-id: ${{ github.event.workflow_run.id }}
           - name: "Report Coverage"
-            uses: davelosert/vitest-coverage-report-action@v2
+            uses: dzannotti/bun-coverage-report-action@v1
     ```
 
 > [!NOTE]
@@ -342,4 +254,9 @@ This approach has a few limitations:
 
 - The **Reporting Workflow** is only triggered after the **Testing Workflow** completes. As a result, there will be a (most likely neglectable) delay before a comment appears on the pull request.
 - To obtain the pull request number from a forked pull request, it's necessary to iterate over all pull requests in the repository using the [Pulls REST API](https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests) and match it by the `head_sha`. This is due to the `github` context of the triggering workflow not containing the pull request information ([see this discussion](https://github.com/orgs/community/discussions/25220)). While this is generally not an issue, it could cause delays if the repository is large and the pull request is significantly old.
-- Since the **Reporting Workflow** runs in the context of your repository's default branch, changes to your coverage threshold won't be reflected in the pull request comment. This can be mitigated by also uploading the Vite config as an artifact in the **Testing Workflow**.
+
+## Limitations
+
+This action reports **Lines** and **Functions** coverage only, as these are the metrics supported by Bun's LCOV output. If you need **Statements** and **Branches** coverage, consider using the original [vitest-coverage-report-action](https://github.com/davelosert/vitest-coverage-report-action).
+
+Additionally, coverage thresholds are not supported in this fork. The action will report coverage but won't fail based on threshold values.
