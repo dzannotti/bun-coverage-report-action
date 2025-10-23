@@ -139,7 +139,7 @@ function generateCoverageCell(
 		const diff = summary[field].pct - summaryCompare[field].pct;
 		diffText = `<br/>${getCompareString(diff)}`;
 	}
-	return `<td align="right">${summary[field].pct}%${diffText}</td>`;
+	return `<td align="right">${summary[field].pct.toFixed(2)}%${diffText}</td>`;
 }
 
 function formatGroupLine(caption: string): string {

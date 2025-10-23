@@ -32,7 +32,7 @@ describe("generateSummaryTabelHtml()", () => {
 
 		const summaryHtml = generateSummaryTableHtml(mockReport, undefined);
 
-		expect(getTableLine(1, summaryHtml)).toContain("80%");
+		expect(getTableLine(1, summaryHtml)).toContain("80.00%");
 	});
 
 	it("shows the covered / total numbers.", async (): Promise<void> => {
@@ -63,7 +63,7 @@ describe("generateSummaryTabelHtml()", () => {
 		const summaryHtml = generateSummaryTableHtml(mockReport, mockCompareReport);
 
 		expect(getTableLine(1, summaryHtml)).toContain(
-			"80%<br/>⬇️ <em>-10.00%</em>",
+			"80.00%<br/>⬇️ <em>-10.00%</em>",
 		);
 	});
 
@@ -82,7 +82,7 @@ describe("generateSummaryTabelHtml()", () => {
 		const summaryHtml = generateSummaryTableHtml(mockReport, mockCompareReport);
 
 		expect(getTableLine(1, summaryHtml)).toContain(
-			"90%<br/>⬆️ <em>+10.00%</em>",
+			"90.00%<br/>⬆️ <em>+10.00%</em>",
 		);
 	});
 
@@ -100,6 +100,6 @@ describe("generateSummaryTabelHtml()", () => {
 
 		const summaryHtml = generateSummaryTableHtml(mockReport, mockCompareReport);
 
-		expect(getTableLine(1, summaryHtml)).toContain("90%<br/>🟰 <em>±0%</em>");
+		expect(getTableLine(1, summaryHtml)).toContain("90.00%<br/>🟰 <em>±0%</em>");
 	});
 });
