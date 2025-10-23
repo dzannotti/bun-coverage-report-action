@@ -22,12 +22,27 @@ const run = async () => {
 	const options = await readOptions(octokit);
 	core.info(`Using options: ${JSON.stringify(options, null, 2)}`);
 
-	const { summary: jsonSummary, final: jsonFinal } = await parseLcovReport(options.lcovFile);
+	let jsonSummary: JsonSummary;
+	let jsonFinal: JsonFinal;
+
+	try {
+		const result = await parseLcovReport(options.lcovFile);
+		jsonSummary = result.summary;
+		jsonFinal = result.final;
+	} catch (err) {
+		const message = err instanceof Error ? err.message : String(err);
+		core.setFailed(`Failed to parse LCOV report. Make sure to run tests with coverage before this action. Error: ${message}`);
+		throw err;
+	}
 
 	let jsonSummaryCompare: JsonSummary | undefined;
 	if (options.lcovFileCompare) {
-		const compareData = await parseLcovReport(options.lcovFileCompare);
-		jsonSummaryCompare = compareData.summary;
+		try {
+			const compareData = await parseLcovReport(options.lcovFileCompare);
+			jsonSummaryCompare = compareData.summary;
+		} catch (err) {
+			core.warning(`Failed to parse comparison LCOV file at "${options.lcovFileCompare}". Continuing without comparison data.`);
+		}
 	}
 
 	const summary = core.summary

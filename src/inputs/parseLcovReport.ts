@@ -71,16 +71,8 @@ const parseLcovReport = async (
 
 		return { summary, final };
 	} catch (err: unknown) {
-		const stack = err instanceof Error ? err.stack : "";
-		core.setFailed(stripIndent`
-			Failed to parse the LCOV report at path "${lcovPath}."
-			Make sure to run bun test with --coverage before this action.
-
-			Original Error:
-			${stack}
-		`);
-
-		throw err;
+		const message = err instanceof Error ? err.message : String(err);
+		throw new Error(`Failed to parse LCOV file at "${lcovPath}": ${message}`);
 	}
 };
 
