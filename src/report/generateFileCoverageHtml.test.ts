@@ -125,8 +125,8 @@ describe("generateFileCoverageHtml()", () => {
 
 		const tableLine = getTableLine(2, html);
 
-		expect(tableLine).toContain("90%");
-		expect(tableLine).toContain("100%");
+		expect(tableLine).toContain("90.00%");
+		expect(tableLine).toContain("100.00%");
 	});
 
 	it("renders the line-coverage in the same row as the coverage.", async (): Promise<void> => {
@@ -154,7 +154,7 @@ describe("generateFileCoverageHtml()", () => {
 
 		const tableLine = getTableLine(2, html);
 
-		expect(tableLine).toContain("70%");
+		expect(tableLine).toContain("70.00%");
 		expect(tableLine).toContain("1-2");
 		expect(tableLine).toContain("#L1-L2");
 	});

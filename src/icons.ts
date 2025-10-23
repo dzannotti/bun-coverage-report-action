@@ -6,6 +6,7 @@ const icons = {
 	decrease: "⬇️",
 	equal: "🟰",
 	target: "🎯",
+	party: "🎉",
 };
 
 export { icons };

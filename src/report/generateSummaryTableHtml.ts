@@ -37,7 +37,7 @@ function generateTableRow({
 	category: string;
 	reportCompareNumbers?: ReportNumbers;
 }): string {
-	let percent = `${reportNumbers.pct}%`;
+	let percent = `${reportNumbers.pct.toFixed(2)}%`;
 
 	if (reportCompareNumbers) {
 		const percentDiff = reportNumbers.pct - reportCompareNumbers.pct;
