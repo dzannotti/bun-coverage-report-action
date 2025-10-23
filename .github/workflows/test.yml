@@ -70,5 +70,5 @@ jobs:
         uses: ./
         with:
           file-coverage-mode: "all"
-          json-summary-compare-path: coverage-main/coverage-summary.json
+          lcov-file-compare: coverage-main/lcov.info
           comment-on: 'pr,commit'

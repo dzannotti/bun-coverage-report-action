@@ -4,10 +4,7 @@ import { RequestError } from "@octokit/request-error";
 import { FileCoverageMode } from "./inputs/FileCoverageMode.js";
 import { getPullChanges } from "./inputs/getPullChanges.js";
 import { type Options, readOptions } from "./inputs/options.js";
-import {
-	parseVitestJsonFinal,
-	parseVitestJsonSummary,
-} from "./inputs/parseJsonReports.js";
+import { parseLcovReport } from "./inputs/parseLcovReport.js";
 import { type Octokit, createOctokit } from "./octokit.js";
 import { generateCommitSHAUrl } from "./report/generateCommitSHAUrl.js";
 import { generateFileCoverageHtml } from "./report/generateFileCoverageHtml.js";
@@ -25,13 +22,12 @@ const run = async () => {
 	const options = await readOptions(octokit);
 	core.info(`Using options: ${JSON.stringify(options, null, 2)}`);
 
-	const jsonSummary = await parseVitestJsonSummary(options.jsonSummaryPath);
+	const { summary: jsonSummary, final: jsonFinal } = await parseLcovReport(options.lcovFile);
 
 	let jsonSummaryCompare: JsonSummary | undefined;
-	if (options.jsonSummaryComparePath) {
-		jsonSummaryCompare = await parseVitestJsonSummary(
-			options.jsonSummaryComparePath,
-		);
+	if (options.lcovFileCompare) {
+		const compareData = await parseLcovReport(options.lcovFileCompare);
+		jsonSummaryCompare = compareData.summary;
 	}
 
 	const summary = core.summary
@@ -45,7 +41,6 @@ const run = async () => {
 		.addRaw(
 			generateSummaryTableHtml(
 				jsonSummary.total,
-				options.thresholds,
 				jsonSummaryCompare?.total,
 			),
 		);
@@ -57,7 +52,6 @@ const run = async () => {
 			octokit,
 		});
 
-		const jsonFinal = await parseVitestJsonFinal(options.jsonFinalPath);
 		const fileTable = generateFileCoverageHtml({
 			jsonSummary,
 			jsonSummaryCompare,
@@ -73,7 +67,7 @@ const run = async () => {
 	const commitSHAUrl = generateCommitSHAUrl(options.commitSHA);
 
 	summary.addRaw(
-		`<em>Generated in workflow <a href=${getWorkflowSummaryURL()}>#${github.context.runNumber}</a> for commit <a href="${commitSHAUrl}">${options.commitSHA.substring(0, 7)}</a> by the <a href="https://github.com/davelosert/vitest-coverage-report-action">Vitest Coverage Report Action</a></em>`,
+		`<em>Generated in workflow <a href=${getWorkflowSummaryURL()}>#${github.context.runNumber}</a> for commit <a href="${commitSHAUrl}">${options.commitSHA.substring(0, 7)}</a> by the <a href="https://github.com/dzannotti/bun-coverage-report-action">Bun Coverage Report Action</a></em>`,
 	);
 
 	if (options.commentOn.includes("pr")) {

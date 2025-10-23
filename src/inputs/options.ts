@@ -1,21 +1,16 @@
 import * as path from "node:path";
 import * as core from "@actions/core";
 import type { Octokit } from "../octokit";
-import type { Thresholds } from "../types/Threshold";
 import { type FileCoverageMode, getCoverageModeFrom } from "./FileCoverageMode";
 import { type CommentOn, getCommentOn } from "./getCommentOn";
 import { getCommitSHA } from "./getCommitSHA";
 import { getPullRequestNumber } from "./getPullRequestNumber";
-import { getViteConfigPath } from "./getViteConfigPath";
-import { parseCoverageThresholds } from "./parseCoverageThresholds";
 
 type Options = {
 	fileCoverageMode: FileCoverageMode;
-	jsonFinalPath: string;
-	jsonSummaryPath: string;
-	jsonSummaryComparePath: string | null;
+	lcovFile: string;
+	lcovFileCompare: string | null;
 	name: string;
-	thresholds: Thresholds;
 	workingDirectory: string;
 	prNumber: number | undefined;
 	commitSHA: string;
@@ -30,38 +25,23 @@ async function readOptions(octokit: Octokit): Promise<Options> {
 	const fileCoverageModeRaw = core.getInput("file-coverage-mode"); // all/changes/none
 	const fileCoverageMode = getCoverageModeFrom(fileCoverageModeRaw);
 
-	const jsonSummaryPath = path.resolve(
+	const lcovFile = path.resolve(
 		workingDirectory,
-		core.getInput("json-summary-path"),
+		core.getInput("lcov-file"),
 	);
 
-	const jsonFinalPath = path.resolve(
-		workingDirectory,
-		core.getInput("json-final-path"),
-	);
-
-	const jsonSummaryCompareInput = core.getInput("json-summary-compare-path");
-	let jsonSummaryComparePath: string | null = null;
-	if (jsonSummaryCompareInput) {
-		jsonSummaryComparePath = path.resolve(
+	const lcovFileCompareInput = core.getInput("lcov-file-compare");
+	let lcovFileCompare: string | null = null;
+	if (lcovFileCompareInput) {
+		lcovFileCompare = path.resolve(
 			workingDirectory,
-			jsonSummaryCompareInput,
+			lcovFileCompareInput,
 		);
 	}
 
 	const name = core.getInput("name");
 
 	const commentOn = getCommentOn();
-
-	// ViteConfig is optional, as it is only required for thresholds. If no vite config is provided, we will not include thresholds in the final report.
-	const viteConfigPath = await getViteConfigPath(
-		workingDirectory,
-		core.getInput("vite-config-path"),
-	);
-
-	const thresholds = viteConfigPath
-		? await parseCoverageThresholds(viteConfigPath)
-		: {};
 
 	const commitSHA = getCommitSHA();
 
@@ -75,11 +55,9 @@ async function readOptions(octokit: Octokit): Promise<Options> {
 
 	return {
 		fileCoverageMode,
-		jsonFinalPath,
-		jsonSummaryPath,
-		jsonSummaryComparePath,
+		lcovFile,
+		lcovFileCompare,
 		name,
-		thresholds,
 		workingDirectory,
 		prNumber,
 		commitSHA,

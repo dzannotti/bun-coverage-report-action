@@ -87,8 +87,6 @@ const generateFileCoverageHtml = ({
 			<thead>
 				<tr>
 				 <th align="left">File</th>
-				 <th align="right">Stmts</th>
-				 <th align="right">Branches</th>
 				 <th align="right">Functions</th>
 				 <th align="right">Lines</th>
 				 <th align="left">Uncovered Lines</th>
@@ -115,9 +113,9 @@ function generateRow(
 		: undefined;
 	const lineCoverage = jsonFinal[filePath];
 
-	// LineCoverage might be empty if coverage-final.json was not provided.
+	// LineCoverage might be empty if LCOV file was not provided or has no data.
 	const uncoveredLines = lineCoverage
-		? getUncoveredLinesFromStatements(jsonFinal[filePath])
+		? getUncoveredLinesFromStatements(lineCoverage.lines)
 		: [];
 	const relativeFilePath = path.relative(workspacePath, filePath);
 	const url = generateBlobFileUrl(relativeFilePath, commitSHA);
@@ -125,8 +123,6 @@ function generateRow(
 	return `
 			<tr>
 				<td align="left"><a href="${url}">${relativeFilePath}</a></td>
-					${generateCoverageCell(coverageSummary, coverageSummaryCompare, "statements")}
-					${generateCoverageCell(coverageSummary, coverageSummaryCompare, "branches")}
 					${generateCoverageCell(coverageSummary, coverageSummaryCompare, "functions")}
 					${generateCoverageCell(coverageSummary, coverageSummaryCompare, "lines")}
 				<td align="left">${createRangeURLs(uncoveredLines, url)}</td>
@@ -149,7 +145,7 @@ function generateCoverageCell(
 function formatGroupLine(caption: string): string {
 	return `
 				<tr>
-					<td align="left" colspan="6"><b>${caption}</b></td>
+					<td align="left" colspan="4"><b>${caption}</b></td>
 				</tr>
 	`;
 }

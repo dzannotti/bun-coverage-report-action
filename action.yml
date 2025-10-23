@@ -1,25 +1,18 @@
-name: 'Vitest Coverage Report'
-description: 'Provide a Vitest Test Coverage Report as Step-Summary and comment in Pull Requests'
+name: 'Bun Coverage Report'
+description: 'Provide a Bun Test Coverage Report as Step-Summary and comment in Pull Requests'
 author: 'David Losert'
 inputs:
   github-token:
       required: false
       description: 'A github access token with permissions to write to issues. Uses secrets.GITHUB_TOKEN by default.'
       default: ${{ github.token }}
-  vite-config-path:
+  lcov-file:
       required: false
-      description: 'The path to the vite config file. By default, looks for paths by the pattern "vite[st].config.{t|mt|ct|j|mj|cj}s".'
-  json-summary-path:
+      description: 'The path to the LCOV coverage report file. Uses "coverage/lcov.info" by default.'
+      default: coverage/lcov.info
+  lcov-file-compare:
       required: false
-      description: 'The path to the json summary file. Uses "coverage/coverage-summary.json" by default.'
-      default: coverage/coverage-summary.json
-  json-summary-compare-path:
-      required: false
-      description: 'The path to the json summary file of the previous run to get trend indicators.'
-  json-final-path:
-      required: false
-      description: 'The path to the json final file. Uses "coverage/coverage-final.json" by default.'
-      default: coverage/coverage-final.json
+      description: 'The path to the LCOV file of the previous run to get trend indicators.'
   file-coverage-mode:
       required: false
       description: 'How to show summary for files coverage. Uses "changes" by default.'
